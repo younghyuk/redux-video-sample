@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.constraintlayout.widget.ConstraintSet.*
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
 import com.example.reduxvideosample.components.OverlayComponent
@@ -77,17 +78,19 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         constraintSet.clone(container)
 
         surfaceComponent.getContainerId().let {
-            constraintSet.clear(it)
-            constraintSet.connect(it, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
-            constraintSet.connect(it, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-            constraintSet.connect(it, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-            constraintSet.constrainWidth(it, ConstraintSet.MATCH_CONSTRAINT)
-            constraintSet.constrainHeight(it, ConstraintSet.MATCH_CONSTRAINT)
+            constraintSet.connect(it, TOP, PARENT_ID, TOP)
+            constraintSet.connect(it, START, PARENT_ID, START)
+            constraintSet.connect(it, END, PARENT_ID, END)
+            constraintSet.constrainWidth(it, MATCH_CONSTRAINT)
+            constraintSet.constrainHeight(it, MATCH_CONSTRAINT)
             constraintSet.setDimensionRatio(it, "H, 16:9")
         }
 
         overlayComponent.getContainerId().let {
-            constraintSet.clear(it)
+            constraintSet.connect(it, TOP, surfaceComponent.getContainerId(), TOP)
+            constraintSet.connect(it, START, surfaceComponent.getContainerId(), START)
+            constraintSet.connect(it, END, surfaceComponent.getContainerId(), END)
+            constraintSet.connect(it, BOTTOM, surfaceComponent.getContainerId(), BOTTOM)
         }
 
         constraintSet.applyTo(container)

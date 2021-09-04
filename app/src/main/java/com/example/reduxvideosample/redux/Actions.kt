@@ -16,3 +16,6 @@ sealed class PlayerAction : Action {
     object UnMute : PlayerAction()
 }
 
+sealed class PlayerCallbackAction : Action {
+    data class VolumeChanged(val volume: Float) : PlayerAction()
+}

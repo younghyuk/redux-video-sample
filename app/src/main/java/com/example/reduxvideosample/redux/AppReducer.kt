@@ -9,10 +9,10 @@ class AppReducer : Reducer<AppState> {
         Log.d(TAG, "invoke: $action")
         var newState = state
         when (action) {
-            is AppAction.ClickSurface -> {
-//                newState = newState.copy(
-//                    isPlayed =
-//                )
+            is PlayerCallbackAction.VolumeChanged -> {
+                newState = newState.copy(
+                    isMuted = action.volume == 0F
+                )
             }
         }
 
