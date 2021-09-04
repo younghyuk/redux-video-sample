@@ -97,9 +97,4 @@ class MainActivity : AppCompatActivity() {
             AppState()
         )
     }
-
-    companion object {
-        val FREE_VIDEO_URI =
-            "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-    }
 }
