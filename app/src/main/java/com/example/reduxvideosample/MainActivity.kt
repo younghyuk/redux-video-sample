@@ -10,13 +10,15 @@ import androidx.constraintlayout.widget.ConstraintSet
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
 import com.example.reduxvideosample.components.SurfaceComponent
-import com.example.reduxvideosample.player.ExoVideoPlayer
+import com.example.reduxvideosample.middlewares.PlayerMiddleware
 import com.example.reduxvideosample.redux.AppReducer
 import com.example.reduxvideosample.redux.AppState
+import com.example.reduxvideosample.redux.PlayerAction
+import com.google.android.exoplayer2.SimpleExoPlayer
 
 class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
-    private lateinit var player: ExoVideoPlayer
+    private lateinit var player: SimpleExoPlayer
     private lateinit var store: Store<AppState>
     private lateinit var rootView: ConstraintLayout
 
@@ -31,17 +33,18 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         this.rootView = findViewById(R.id.rootView)
 
         initComponents(rootView)
-        initPlayer()
+        subscribeAll()
+        store.dispatch(PlayerAction.Init(surfaceComponent.videoView))
     }
 
     override fun onStart() {
         super.onStart()
-        subscribeAll()
+        store.dispatch(PlayerAction.Play)
     }
 
     override fun onStop() {
         super.onStop()
-        unsubscribeAll()
+        store.dispatch(PlayerAction.Pause)
     }
 
     private fun subscribeAll() {
@@ -56,18 +59,8 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
     override fun onDestroy() {
         super.onDestroy()
-        releasePlayer()
-    }
-
-    private fun initPlayer() {
-        player.setVideoView(surfaceComponent.videoView)
-        player.loadVideo()
-        player.play()
-    }
-
-    private fun releasePlayer() {
-        player.setVideoView(null)
-        player.release()
+        store.dispatch(PlayerAction.Release)
+        unsubscribeAll()
     }
 
     private fun initComponents(container: ViewGroup) {
@@ -80,24 +73,9 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
         surfaceComponent.getContainerId().let {
             constraintSet.clear(it)
-            constraintSet.connect(
-                it,
-                ConstraintSet.TOP,
-                ConstraintSet.PARENT_ID,
-                ConstraintSet.TOP
-            )
-            constraintSet.connect(
-                it,
-                ConstraintSet.START,
-                ConstraintSet.PARENT_ID,
-                ConstraintSet.START
-            )
-            constraintSet.connect(
-                it,
-                ConstraintSet.END,
-                ConstraintSet.PARENT_ID,
-                ConstraintSet.END
-            )
+            constraintSet.connect(it, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            constraintSet.connect(it, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+            constraintSet.connect(it, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
             constraintSet.constrainWidth(it, ConstraintSet.MATCH_CONSTRAINT)
             constraintSet.constrainHeight(it, ConstraintSet.MATCH_CONSTRAINT)
             constraintSet.setDimensionRatio(it, "H, 16:9")
@@ -107,10 +85,10 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
     }
 
     private fun injectDependencies(context: Context) {
-        this.player = ExoVideoPlayer(context)
+        this.player = SimpleExoPlayer.Builder(context).build()
         this.store = Store(
             AppReducer(),
-            listOf(),
+            listOf(PlayerMiddleware(player)),
             AppState()
         )
     }
