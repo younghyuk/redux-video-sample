@@ -2,10 +2,8 @@ package com.example.reduxvideosample
 
 import android.content.Context
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
@@ -44,21 +42,23 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         initComponents(rootView)
         subscribeAll()
         store.dispatch(PlayerAction.Init(surfaceComponent.videoView))
+        store.dispatch(PlayerAction.Play)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        store.dispatch(PlayerAction.Pause)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        store.dispatch(PlayerAction.Release)
+        unsubscribeAll()
     }
 
     private fun removeTitleAndStatusBar() {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    }
-
-    override fun onStart() {
-        super.onStart()
-        store.dispatch(PlayerAction.Play)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        store.dispatch(PlayerAction.Pause)
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     private fun subscribeAll() {
@@ -71,12 +71,6 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         store.unsubscribe(this)
         surfaceComponent.unsubscribe()
         overlayComponent.unsubscribe()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        store.dispatch(PlayerAction.Release)
-        unsubscribeAll()
     }
 
     private fun initComponents(container: ViewGroup) {
