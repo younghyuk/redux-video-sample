@@ -2,17 +2,19 @@ package com.example.reduxvideosample
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import com.example.redux.Store
+import com.example.redux.StoreSubscriber
 import com.example.reduxvideosample.components.SurfaceComponent
 import com.example.reduxvideosample.player.ExoVideoPlayer
 import com.example.reduxvideosample.redux.AppReducer
 import com.example.reduxvideosample.redux.AppState
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
     private lateinit var player: ExoVideoPlayer
     private lateinit var store: Store<AppState>
@@ -29,13 +31,31 @@ class MainActivity : AppCompatActivity() {
         this.rootView = findViewById(R.id.rootView)
 
         initComponents(rootView)
-        layoutUiComponents(rootView)
         initPlayer()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        subscribeAll()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unsubscribeAll()
+    }
+
+    private fun subscribeAll() {
+        store.subscribe(this)
+        surfaceComponent.subscribe()
+    }
+
+    private fun unsubscribeAll() {
+        store.unsubscribe(this)
+        surfaceComponent.unsubscribe()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        surfaceComponent.release()
         releasePlayer()
     }
 
@@ -51,43 +71,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initComponents(container: ViewGroup) {
-        surfaceComponent = SurfaceComponent(container, store).also { it.init() }
+        surfaceComponent = SurfaceComponent(container, store)
     }
 
-    private fun layoutUiComponents(rootViewContainer: ConstraintLayout) {
-        val rootConstraintSet = ConstraintSet()
-        rootConstraintSet.clone(rootViewContainer)
+    private fun layoutUiComponents(container: ConstraintLayout) {
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(container)
 
         surfaceComponent.getContainerId().let {
-            rootConstraintSet.connect(
+            constraintSet.clear(it)
+            constraintSet.connect(
                 it,
                 ConstraintSet.TOP,
                 ConstraintSet.PARENT_ID,
                 ConstraintSet.TOP
             )
-            rootConstraintSet.connect(
-                it,
-                ConstraintSet.BOTTOM,
-                ConstraintSet.PARENT_ID,
-                ConstraintSet.BOTTOM
-            )
-            rootConstraintSet.connect(
+            constraintSet.connect(
                 it,
                 ConstraintSet.START,
                 ConstraintSet.PARENT_ID,
                 ConstraintSet.START
             )
-            rootConstraintSet.connect(
+            constraintSet.connect(
                 it,
                 ConstraintSet.END,
                 ConstraintSet.PARENT_ID,
                 ConstraintSet.END
             )
+            constraintSet.constrainWidth(it, ConstraintSet.MATCH_CONSTRAINT)
+            constraintSet.constrainHeight(it, ConstraintSet.MATCH_CONSTRAINT)
+            constraintSet.setDimensionRatio(it, "H, 16:9")
         }
 
-        rootConstraintSet.applyTo(rootViewContainer)
+        constraintSet.applyTo(container)
     }
-
 
     private fun injectDependencies(context: Context) {
         this.player = ExoVideoPlayer(context)
@@ -96,5 +113,14 @@ class MainActivity : AppCompatActivity() {
             listOf(),
             AppState()
         )
+    }
+
+    override fun newState(state: AppState) {
+        Log.d(TAG, "newState is called")
+        layoutUiComponents(rootView)
+    }
+
+    companion object {
+        const val TAG = "MainActivity"
     }
 }

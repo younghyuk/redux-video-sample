@@ -1,11 +1,10 @@
 package com.example.reduxvideosample.components
 
-import android.view.LayoutInflater
 import android.view.TextureView
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
-import com.example.reduxvideosample.R
 import com.example.reduxvideosample.redux.AppState
 
 class SurfaceComponent(
@@ -13,20 +12,21 @@ class SurfaceComponent(
     private val store: Store<AppState>
 ) : StoreSubscriber<AppState> {
 
-    private val uiView =
-        LayoutInflater.from(container.context)
-            .inflate(R.layout.surface, container, true)
+    private val uiView = TextureView(container.context).apply {
+        id = ViewCompat.generateViewId()
+        container.addView(this)
+    }
 
     val videoView: TextureView
-        get() = uiView.findViewById(R.id.textureView)
+        get() = uiView
 
     fun getContainerId(): Int = uiView.id
 
-    fun init() {
+    fun subscribe() {
         store.subscribe(this)
     }
 
-    fun release() {
+    fun unsubscribe() {
         store.unsubscribe(this)
     }
 
