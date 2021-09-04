@@ -14,6 +14,11 @@ class AppReducer : Reducer<AppState> {
                     isMuted = action.volume == 0F
                 )
             }
+            is AppAction.Expand, AppAction.Collapse -> {
+                newState = newState.copy(
+                    isExpanded = action is AppAction.Expand
+                )
+            }
         }
 
         return newState

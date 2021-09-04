@@ -1,9 +1,14 @@
 package com.example.reduxvideosample
 
 import android.content.Context
+import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -28,6 +33,7 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
     private lateinit var overlayComponent: OverlayComponent
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        removeTitleAndStatusBar()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -38,6 +44,11 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         initComponents(rootView)
         subscribeAll()
         store.dispatch(PlayerAction.Init(surfaceComponent.videoView))
+    }
+
+    private fun removeTitleAndStatusBar() {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     override fun onStart() {
@@ -78,12 +89,35 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
         constraintSet.clone(container)
 
         surfaceComponent.getContainerId().let {
+            constraintSet.clear(it)
             constraintSet.connect(it, TOP, PARENT_ID, TOP)
             constraintSet.connect(it, START, PARENT_ID, START)
             constraintSet.connect(it, END, PARENT_ID, END)
             constraintSet.constrainWidth(it, MATCH_CONSTRAINT)
             constraintSet.constrainHeight(it, MATCH_CONSTRAINT)
             constraintSet.setDimensionRatio(it, "H, 16:9")
+        }
+
+        overlayComponent.getContainerId().let {
+            constraintSet.connect(it, TOP, surfaceComponent.getContainerId(), TOP)
+            constraintSet.connect(it, START, surfaceComponent.getContainerId(), START)
+            constraintSet.connect(it, END, surfaceComponent.getContainerId(), END)
+            constraintSet.connect(it, BOTTOM, surfaceComponent.getContainerId(), BOTTOM)
+        }
+
+        constraintSet.applyTo(container)
+    }
+
+    private fun layoutUiComponentsOnFullscreen(container: ConstraintLayout) {
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(container)
+
+        surfaceComponent.getContainerId().let {
+            constraintSet.clear(it)
+            constraintSet.connect(it, TOP, PARENT_ID, TOP)
+            constraintSet.connect(it, START, PARENT_ID, START)
+            constraintSet.connect(it, END, PARENT_ID, END)
+            constraintSet.connect(it, BOTTOM, PARENT_ID, BOTTOM)
         }
 
         overlayComponent.getContainerId().let {
@@ -107,7 +141,13 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
     override fun newState(state: AppState) {
         Log.d(TAG, "newState is called")
-        layoutUiComponents(rootView)
+        if (state.isExpanded) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            layoutUiComponentsOnFullscreen(rootView)
+        } else {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            layoutUiComponents(rootView)
+        }
     }
 
     companion object {

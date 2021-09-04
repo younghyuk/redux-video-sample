@@ -4,7 +4,8 @@ import android.view.TextureView
 import com.example.redux.Action
 
 sealed class AppAction : Action {
-    object ClickSurface : AppAction()
+    object Collapse : AppAction()
+    object Expand : AppAction()
 }
 
 sealed class PlayerAction : Action {

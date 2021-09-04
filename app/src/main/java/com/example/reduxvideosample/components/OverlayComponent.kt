@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.constraintlayout.widget.ConstraintSet.*
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
 import com.example.reduxvideosample.R
@@ -15,11 +16,11 @@ class OverlayComponent(
 ) : UiComponent, StoreSubscriber<AppState> {
 
     private val context = container.context
-
     private val uiView = LayoutInflater.from(context)
         .inflate(R.layout.component_overlay, container, false) as ConstraintLayout
 
     private lateinit var soundComponent: SoundComponent
+    private lateinit var fullscreenComponent: FullscreenComponent
 
     init {
         container.addView(uiView)
@@ -32,23 +33,33 @@ class OverlayComponent(
     override fun subscribe() {
         store.subscribe(this)
         soundComponent.subscribe()
+        fullscreenComponent.subscribe()
     }
 
     override fun unsubscribe() {
         store.unsubscribe(this)
         soundComponent.unsubscribe()
+        fullscreenComponent.unsubscribe()
     }
 
     private fun initComponents(container: ViewGroup) {
         soundComponent = SoundComponent(container, store)
+        fullscreenComponent = FullscreenComponent(container, store)
     }
 
     private fun layoutUiComponents(container: ConstraintLayout) {
         val constraintSet = ConstraintSet()
         constraintSet.clone(container)
 
-        constraintSet.connect(soundComponent.getContainerId(), ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, dpToPx(context, 10))
-        constraintSet.connect(soundComponent.getContainerId(), ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, dpToPx(context, 10))
+        soundComponent.getContainerId().let {
+            constraintSet.connect(it, START, PARENT_ID, START, dpToPx(context, 10))
+            constraintSet.connect(it, BOTTOM, PARENT_ID, BOTTOM, dpToPx(context, 10))
+        }
+
+        fullscreenComponent.getContainerId().let {
+            constraintSet.connect(it, END, PARENT_ID, END, dpToPx(context, 10))
+            constraintSet.connect(it, BOTTOM, PARENT_ID, BOTTOM, dpToPx(context, 10))
+        }
 
         constraintSet.applyTo(container)
     }
