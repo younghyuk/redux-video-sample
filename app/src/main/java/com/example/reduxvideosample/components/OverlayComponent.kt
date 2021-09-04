@@ -1,27 +1,26 @@
 package com.example.reduxvideosample.components
 
-import android.view.TextureView
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
+import com.example.reduxvideosample.R
 import com.example.reduxvideosample.redux.AppState
 
-class SurfaceComponent(
+class OverlayComponent(
     container: ViewGroup,
     private val store: Store<AppState>
 ) : UiComponent, StoreSubscriber<AppState> {
 
-    private val uiView = TextureView(container.context).apply {
-        id = ViewCompat.generateViewId()
-    }
+    private val uiView = LayoutInflater.from(container.context)
+        .inflate(R.layout.component_overlay, container, false) as ConstraintLayout
 
     init {
         container.addView(uiView)
+        initComponents(uiView)
+        layoutUiComponents(uiView)
     }
-
-    val videoView: TextureView
-        get() = uiView
 
     override fun getContainerId(): Int = uiView.id
 
@@ -33,6 +32,11 @@ class SurfaceComponent(
         store.unsubscribe(this)
     }
 
-    override fun newState(state: AppState) {
+    private fun initComponents(container: ViewGroup) {
     }
+
+    private fun layoutUiComponents(container: ConstraintLayout) {
+    }
+
+    override fun newState(state: AppState) {}
 }

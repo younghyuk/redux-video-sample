@@ -9,6 +9,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import com.example.redux.Store
 import com.example.redux.StoreSubscriber
+import com.example.reduxvideosample.components.OverlayComponent
 import com.example.reduxvideosample.components.SurfaceComponent
 import com.example.reduxvideosample.middlewares.PlayerMiddleware
 import com.example.reduxvideosample.redux.AppReducer
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
     private lateinit var rootView: ConstraintLayout
 
     private lateinit var surfaceComponent: SurfaceComponent
+    private lateinit var overlayComponent: OverlayComponent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,11 +52,13 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
     private fun subscribeAll() {
         store.subscribe(this)
         surfaceComponent.subscribe()
+        overlayComponent.subscribe()
     }
 
     private fun unsubscribeAll() {
         store.unsubscribe(this)
         surfaceComponent.unsubscribe()
+        overlayComponent.unsubscribe()
     }
 
     override fun onDestroy() {
@@ -65,6 +69,7 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
 
     private fun initComponents(container: ViewGroup) {
         surfaceComponent = SurfaceComponent(container, store)
+        overlayComponent = OverlayComponent(container, store)
     }
 
     private fun layoutUiComponents(container: ConstraintLayout) {
@@ -79,6 +84,10 @@ class MainActivity : AppCompatActivity(), StoreSubscriber<AppState> {
             constraintSet.constrainWidth(it, ConstraintSet.MATCH_CONSTRAINT)
             constraintSet.constrainHeight(it, ConstraintSet.MATCH_CONSTRAINT)
             constraintSet.setDimensionRatio(it, "H, 16:9")
+        }
+
+        overlayComponent.getContainerId().let {
+            constraintSet.clear(it)
         }
 
         constraintSet.applyTo(container)
