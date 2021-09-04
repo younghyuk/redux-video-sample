@@ -14,7 +14,10 @@ class SurfaceComponent(
 
     private val uiView = TextureView(container.context).apply {
         id = ViewCompat.generateViewId()
-        container.addView(this)
+    }
+
+    init {
+        container.addView(uiView)
     }
 
     val videoView: TextureView
